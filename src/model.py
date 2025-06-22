@@ -89,8 +89,8 @@ class Drosophila:
 
     def cross(self, male):
         """Female mates with male if combined receptivity-vigor exceeds threshold."""
-        new_receptivity = self.genotype("receptivity-vigor") # multiply by a factor of age dependent fecundity
-        new_vigor = male.genotype("receptivity-vigor")
+        new_receptivity = self.genotype^["receptivity-vigor"] # multiply by a factor of age dependent fecundity
+        new_vigor = male.genotype["receptivity-vigor"]
 
         if  (self.genotype["sex"] == 1 and  # Ensure female
             male.genotype["sex"] == 0 and  # Ensure male
@@ -187,7 +187,7 @@ class ClepsydraExperiment:
         # 4. Apply adult mortality (genotype-specific)
         self.adults = [
             adult for adult in self.adults 
-            if random.random() > (0.1 if adult.genotype == "transgenic" else 0.02)
+            if random.random() > (0.1 if adult.genotype == "transgenic" else 0.02)]
     
     def add_transgenic_males(self, count):
         """Release transgenic males into the population."""

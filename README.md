@@ -8,9 +8,9 @@ An agent-based model simulating transgenic male releases in cage systems with:
 ## Installation
 ```bash
 pip install -r requirements.txt
-
+```
 ## Project Structure
-bash
+```bash
 clepsydra-simulation/
 ├── src/                      # Main simulation code
 │   ├── model.py              # Core classes (FoodCup, Larva, Adult, Experiment)
@@ -25,3 +25,7 @@ clepsydra-simulation/
 │   ├── plots/                # Population trajectory plots
 │   └── Ne_estimates.csv      # Effective population size calculations
 └── README.md                 # This file
+```
+## Development Log
+- **2025-06-22**: Implemented core `Drosophila` class with genotype tracking
+- **2025-06-21**: Added FoodCup dynamics with larval development
