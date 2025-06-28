@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e94, 2025-05-08)"
+   sodipodi:docname="clepsydra_simulation_diagrams.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.0444209"
+     inkscape:cx="444.26533"
+     inkscape:cy="773.15573"
+     inkscape:window-width="1536"
+     inkscape:window-height="793"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="146.23899"
+       y="388.61659"
+       width="255.93817"
+       height="149.89293"
+       id="rect2" />
+    <rect
+       x="146.23898"
+       y="388.61658"
+       width="265.3967"
+       height="172.64326"
+       id="rect2-2" />
+    <rect
+       x="146.23898"
+       y="388.61658"
+       width="267.4278"
+       height="109.67925"
+       id="rect2-0" />
+    <rect
+       x="146.23898"
+       y="388.61658"
+       width="265.3967"
+       height="172.64326"
+       id="rect2-2-9" />
+    <rect
+       x="146.23898"
+       y="388.61658"
+       width="267.4278"
+       height="109.67925"
+       id="rect2-0-4" />
+    <rect
+       x="146.23898"
+       y="388.61658"
+       width="265.3967"
+       height="172.64326"
+       id="rect2-2-9-2" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1"
+       width="56.247284"
+       height="11.464411"
+       x="6.2301311"
+       y="73.769257" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-4"
+       width="63.809902"
+       height="52.114544"
+       x="4.932745"
+       y="138.62549" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-5"
+       width="63.333977"
+       height="47.981773"
+       x="6.2301311"
+       y="88.41835" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="32.741589"
+       y="80.934509"
+       id="text1"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="32.741589"
+         y="80.934509">Class: Drosophila</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="18.47024"
+       y="93.760536"
+       id="text1-1"><tspan
+         sodipodi:role="line"
+         id="tspan1-5"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="18.47024"
+         y="93.760536">Attributes</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="23.766764"
+       y="144.55122"
+       id="text1-1-4"><tspan
+         sodipodi:role="line"
+         id="tspan1-5-2"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="23.766764"
+         y="144.55122">Operations</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-28.87964,-6.8399148)"
+       id="text2"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2);display:inline"
+       x="-74.687988"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan29"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan28">ID index*****
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.57695"
+         id="tspan31"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan30">stage string
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.97872"
+         id="tspan33"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan32">genotype dictionary
+</tspan></tspan><tspan
+         x="146.23828"
+         y="464.38048"
+         id="tspan35"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan34">mating_threshold float
+</tspan></tspan><tspan
+         x="146.23828"
+         y="484.78225"
+         id="tspan37"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan36">age integer
+</tspan></tspan><tspan
+         x="146.23828"
+         y="505.18401"
+         id="tspan39"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan38">alive boolean
+</tspan></tspan><tspan
+         x="146.23828"
+         y="525.58577"
+         id="tspan41"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan40">food_cup_ID integer</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-28.358489,43.74247)"
+       id="text2-8"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2-2);display:inline"
+       x="-156.56689"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan43"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan42">_random_genotype()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.57695"
+         id="tspan45"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan44">update()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.97872"
+         id="tspan48"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan46">_transgenic_lethality()</tspan><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan47">
+</tspan></tspan><tspan
+         x="146.23828"
+         y="464.38048"
+         id="tspan50"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan49">cull()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="484.78225"
+         id="tspan52"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan51">_transition_stage()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="505.18401"
+         id="tspan54"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan53">cross()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="525.58577"
+         id="tspan56"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan55">oviposition()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="545.98751"
+         id="tspan58"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan57">_inherit_allele()</tspan></tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-8"
+       width="63.087193"
+       height="11.464413"
+       x="83.45488"
+       y="79.298943" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-4-2"
+       width="63.303242"
+       height="32.608101"
+       x="83.677483"
+       y="132.75533" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-5-4"
+       width="63.840637"
+       height="38.861881"
+       x="83.201561"
+       y="92.428062" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="109.71302"
+       y="84.944221"
+       id="text1-5"><tspan
+         sodipodi:role="line"
+         id="tspan1-51"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="109.71302"
+         y="84.944221">Class: FoodCup</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="95.441673"
+       y="97.770248"
+       id="text1-1-7"><tspan
+         sodipodi:role="line"
+         id="tspan1-5-1"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="95.441673"
+         y="97.770248">Attributes</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="98.204903"
+       y="139.69438"
+       id="text1-1-4-1"><tspan
+         sodipodi:role="line"
+         id="tspan1-5-2-5"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="98.204903"
+         y="139.69438">Operations</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,48.091796,-2.8302086)"
+       id="text2-2"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2-0);display:inline"
+       x="-74.687988"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan60"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan59">creation_day integer
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.57695"
+         id="tspan62"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan61">age integer
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.97872"
+         id="tspan64"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan63">food float
+</tspan></tspan><tspan
+         x="146.23828"
+         y="464.38048"
+         id="tspan66"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan65">empty boolean
+</tspan></tspan><tspan
+         x="146.23828"
+         y="484.78225"
+         id="tspan68"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan67">fly_daily_rate float</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,48.359618,41.418922)"
+       id="text2-8-7"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2-2-9);display:inline"
+       x="-219.59088"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan70"><tspan
+           style="text-align:start"
+           id="tspan69">getCreationDay()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.17519"
+         id="tspan72"><tspan
+           style="text-align:start"
+           id="tspan71">deplete()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.17519"
+         id="tspan74"><tspan
+           style="text-align:start"
+           id="tspan73">update()</tspan></tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-8-2"
+       width="63.087193"
+       height="11.464413"
+       x="80.828026"
+       y="179.41956" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-4-2-1"
+       width="63.303242"
+       height="32.608101"
+       x="81.050621"
+       y="232.87595" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.365001"
+       id="rect1-5-4-6"
+       width="63.840637"
+       height="38.861881"
+       x="80.574699"
+       y="192.54868" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="107.08616"
+       y="185.06483"
+       id="text1-5-8"><tspan
+         sodipodi:role="line"
+         id="tspan1-51-5"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="107.08616"
+         y="185.06483">Class: Experiment</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="92.814812"
+       y="197.89087"
+       id="text1-1-7-7"><tspan
+         sodipodi:role="line"
+         id="tspan1-5-1-6"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="92.814812"
+         y="197.89087">Attributes</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;stroke-width:0.264583"
+       x="95.578041"
+       y="239.815"
+       id="text1-1-4-1-1"><tspan
+         sodipodi:role="line"
+         id="tspan1-5-2-5-8"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="95.578041"
+         y="239.815">Operations</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,45.464936,97.290406)"
+       id="text2-2-9"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2-0-4);display:inline"
+       x="-74.687988"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan76"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan75">day integer
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.57695"
+         id="tspan78"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan77">cups list
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.97872"
+         id="tspan80"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan79">population list
+</tspan></tspan><tspan
+         x="146.23828"
+         y="464.38048"
+         id="tspan82"><tspan
+           style="font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';text-align:start"
+           id="tspan81">morgue list</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,45.732756,141.53954)"
+       id="text2-8-7-4"
+       style="font-size:16px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2-2-9-2);display:inline"
+       x="-219.59088"
+       y="0"><tspan
+         x="146.23828"
+         y="403.17519"
+         id="tspan84"><tspan
+           style="text-align:start"
+           id="tspan83">getCreationDay()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="423.17519"
+         id="tspan86"><tspan
+           style="text-align:start"
+           id="tspan85">deplete()
+</tspan></tspan><tspan
+         x="146.23828"
+         y="443.17519"
+         id="tspan88"><tspan
+           style="text-align:start"
+           id="tspan87">update()</tspan></tspan></text>
+  </g>
+</svg>

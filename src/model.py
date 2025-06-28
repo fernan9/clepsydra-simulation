@@ -1,52 +1,39 @@
 import numpy as np
 
 class FoodCup:
-    def __init__(self, creation_day, food=30):
+    def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.05):
         self.creation_day = creation_day  # Day this cup was added
+        self.age = 0
         self.food = food                  # Initial food (grams)
-        self.eggs = []                    # List of (lay_day, genotype)
-        self.larvae = []                  # List of Larva objects
+        self.empty = False
+        self.fly_daily_rate = fly_daily_rate          # standard day consumption per fly
     
-    def add_eggs(self, day, genotype, count):
-        """Log eggs laid on a specific day (only first 4 days matter)."""
-        if day <= self.creation_day + 4:  # Critical 4-day window
-            self.eggs.extend([(day, genotype)] * count)
+    def getCreationDay(self):
+        return self.creation_day
+
+    def deplete(self, immatures = 0):
+        self.food -= self.fly_daily_rate * immatures
+        self.food = max(0, self.food)
+        if self.food == 0:
+            self.empty = True
     
     def update(self, current_day):
-        """Update food, hatch eggs, and cull larvae."""
-        # 1. Food depletion by larvae
-        self.food -= 0.5 * len(self.larvae)
-        self.food = max(0, self.food)
-        
-        # 2. Hatch eggs into larvae (10-day development)
-        new_larvae = [
-            Larva(genotype, lay_day) 
-            for (lay_day, genotype) in self.eggs 
-            if current_day - lay_day == 10
-        ]
-        self.larvae.extend(new_larvae)
-        
-        # there was a step for culling larvae from day 4 onwards but it was removed
-        # this is because the larvae must continue eating from the cup and exhaust the food
-        # food cunsumption should be adjusted, perhaps just for dry mass balance
-        # meaning, get the dry mass of food cup 30g, then use the dry mass per fly, adjust
-        
-        # 3. Metamorphose larvae into adults
-        new_adults = [
-            Adult(larva.genotype) 
-            for larva in self.larvae if larva.age >= 3
-        ]
-        self.larvae = [larva for larva in self.larvae if larva.age < 3]
-        
-        return new_adults
+        self.age += 1
+        if self.age == 7 :
+            self.empty = True
+
+
     
 class Drosophila:
-    def __init__(self, stage="egg", genotype=None, spermatheque=None, mating_threshold = 1):
+    def __init__(self, stage="egg", genotype=None, spermatheque=None, mating_threshold = 1.0, food_cup_ID = FoodCup.getCreationDay()):
         self.stage = stage                                     # "egg", "larva", "immature", "adult"
-        self.genotype = genotype or self._random_genotype()
+        self.genotype = genotype or self._wildtype_genotype()
         mating_threshold = mating_threshold
         self.age = 0  # Tracks time in current stage
         self.alive = True  # Track viability
+        self.food_cup_ID = food_cup_ID
+
+## add IDs to flies to have an array to modify
 
         #female spescific attributes
         if self.genotype["sex"] == 1:   # sex locus = 1: female
@@ -57,26 +44,29 @@ class Drosophila:
             self.fecund = None
 
 
-    def _random_genotype(self):
+    def _wildtype_genotype(self):
         # will be good to adjust later for a bitmask: Pack into a single integer (e.g., 0b101 = sex=1, lethal=0, vigor=1).
         return {
             "sex": np.random.choice([0, 1]),                # SEX locus: 0 for male. 1 for female.
-            "transgenic-lethal": np.random.choice([0, 1]),  # Sterility locus: 0 for wildtype. 1 for transgenic.
+            "transgenic-lethal": 0 ,  # Sterility locus: 0 for wildtype. 1 for transgenic.
             "receptivity-vigor": np.random()                # Receptivity-vigor locus: float between 1 and 0.  
         }
 
     def update(self):
         """Update age and transition stages at predefined thresholds."""
         self._transition_stage()
-        self._check_viability()
+        self._transgenic_lethality()
         self.age += 1
     
-    def _check_viability(self):
+    def _transgenic_lethality(self):
         """Kill transgenic-lethal embryos."""
         if (self.stage == "egg" and 
             self.genotype["transgenic-lethal"] == 1 and 
             np.random.random() < 0.97):  # 97% penetrance
             self.alive = False
+        
+    def cull (self):
+        self.alive = True
 
     def _transition_stage(self):
         if self.stage == "egg" and self.age >= 1:  # Eggs hatch after 5 timesteps
@@ -89,7 +79,7 @@ class Drosophila:
 
     def cross(self, male):
         """Female mates with male if combined receptivity-vigor exceeds threshold."""
-        new_receptivity = self.genotype^["receptivity-vigor"] # multiply by a factor of age dependent fecundity
+        new_receptivity = self.genotype["receptivity-vigor"] # multiply by a factor of age dependent fecundity
         new_vigor = male.genotype["receptivity-vigor"]
 
         if  (self.genotype["sex"] == 1 and  # Ensure female
@@ -116,7 +106,6 @@ class Drosophila:
             "receptivity-vigor": self._inherit_allele(female_genotype["receptivity-vigor"],
                                         male_genotype["receptivity-vigor"])
         }
-        self.fecund = False  # Reset until next mating
         return offspring_genotype
 
     def _inherit_allele(self, mother_allele, father_allele, mutation_rate=0.001):
@@ -134,8 +123,8 @@ class PopulationTracker:
             'age_dist': []  # Binned ages
         }
     
-    def record(self, population, date):
-        adults = [f for f in population if f.stage == 'adult']
+    def record(self, experiment_population, date):
+        adults = [f for f in experiment_population if f.stage == 'adult']
         self.daily_data['date'].append(date)
         self.daily_data['N'].append(len(adults))
         
@@ -147,48 +136,53 @@ class PopulationTracker:
         self.daily_data['genotype_freqs'].append(freqs)
         
         # Mating stats
-        mated = sum(1 for f in adults if f.sex==1 and f.mates)
+        mated = sum(1 for f in adults if f.sex==1 and f.mates)   # sex is not handled properly
         self.daily_data['mating_events'].append(mated)
         
         # Age distribution (10-day bins)
         self.daily_data['age_dist'].append(
             np.histogram([f.age for f in adults], bins=range(0,100,10))[0])
 
-class ClepsydraExperiment:
-    def __init__(self):
+class Experiment:
+    def __init__(self, pop_size = 10, release_date = [], release_size = 0):
         self.day = 0
-        self.cups = [FoodCup(0)]  # Start with 1 cup, on day 0
-        self.adults = []          # Global adult population
+        self.cups = [FoodCup(creation_day=0)]  # Start with 1 cup, on day 0
+        self.population = []          # Global adult population
+        self.morgue = []
+        release_date = release_date
+        release_size = release_size
+        for p in pop_size:
+            self.population.append(Drosophila())
     
     def update_day(self):
         self.day += 1
         
-        # 1. Update all cups, get new adults
-        new_adults = []
-        for cup in self.cups:
-            new_adults.extend(cup.update(self.day))
-        self.adults.extend(new_adults)
+        # update flies in population
+        for fly in self.population:
+            fly.update()
+
+
+        # update cups
+        # on days %7 add cup
+        # empty cup if age > 13
+        # remove cups if empty
+
+        #### on this stage the flies alive should remain and the rest should be on the morgue
         
-        # 2. Replace oldest cup every 14 days
-        if self.day % 14 == 0:
-            self.cups.pop(0)
-            self.cups.append(FoodCup(self.day))
-        
-        # 3. Adults lay eggs in newest cup (first 4 days only)
-        if self.cups[-1].creation_day + 4 >= self.day:
-            for adult in self.adults:
-                if adult.sex == "female" and adult.mature:
-                    self.cups[-1].add_eggs(
-                        day=self.day,
-                        genotype=adult.genotype,
-                        count=np.random.poisson(20)  # Clutch size
-                    )
-        
-        # 4. Apply adult mortality (genotype-specific)
-        self.adults = [
-            adult for adult in self.adults 
-            if random.random() > (0.1 if adult.genotype == "transgenic" else 0.02)]
-    
+        # release transgenic males
+
+        # mate flies in population
+
+        # female fly oviposition round
+
+    def mortality_round(self):
+        for fly in self.flies:
+            if fly.alive:
+                # Check if the fly dies today based on age-independent probability
+                if np.random.random() < self.p_daily:
+                    fly.alive = False
+                fly.age += 1
+
     def add_transgenic_males(self, count):
         """Release transgenic males into the population."""
         for _ in range(count):
