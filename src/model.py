@@ -3,9 +3,8 @@ import numpy as np
 class FoodCup:
     def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.05):
         self.creation_day = creation_day  # Day this cup was added
-        self.age = 0
         self.food = food                  # Initial food (grams)
-        self.empty = False
+        self.spent = False
         self.fly_daily_rate = fly_daily_rate          # standard day consumption per fly
     
     def getCreationDay(self):
@@ -15,23 +14,33 @@ class FoodCup:
         self.food -= self.fly_daily_rate * immatures
         self.food = max(0, self.food)
         if self.food == 0:
-            self.empty = True
-    
-    def update(self, current_day):
-        self.age += 1
-        if self.age == 7 :
-            self.empty = True
+            self.spent = True
 
 
     
 class Drosophila:
     def __init__(self, stage="egg", genotype=None, spermatheque=None, mating_threshold = 1.0, food_cup_ID = FoodCup.getCreationDay()):
-        self.stage = stage                                     # "egg", "larva", "immature", "adult"
+        
+        ''' Set initial values'''
+        self.alive = True  # Track viability
         self.genotype = genotype or self._wildtype_genotype()
         mating_threshold = mating_threshold
-        self.age = 0  # Tracks time in current stage
-        self.alive = True  # Track viability
+        
+        '''Define stages and age'''
+        self.stage = stage  # "egg", "larva", "immature", "adult"
+        if self.stage == "egg":
+            self.age = 0    # Tracks time in current stage
+        elif self.stage == "larva":
+            self.age = 2
+        elif self.stage == "immature":
+            self.age = 10
+        elif self.stage == "adult":
+            self.age = 12
+        else:
+            raise ValueError("Stage provided is not valid.")
+
         self.food_cup_ID = food_cup_ID
+        ''' Still missing how to handle food cups ID'''
 
 ## add IDs to flies to have an array to modify
 
@@ -56,8 +65,9 @@ class Drosophila:
         """Update age and transition stages at predefined thresholds."""
         self._transition_stage()
         self._transgenic_lethality()
+        self._mortality_die()
         self.age += 1
-    
+
     def _transgenic_lethality(self):
         """Kill transgenic-lethal embryos."""
         if (self.stage == "egg" and 
@@ -144,36 +154,100 @@ class PopulationTracker:
             np.histogram([f.age for f in adults], bins=range(0,100,10))[0])
 
 class Experiment:
-    def __init__(self, pop_size = 10, release_date = [], release_size = 0):
+    def __init__(
+        self, 
+        pop_size = 10, 
+        release_dates = None, 
+        release_sizes = None,
+        food_init_dates = None,
+        food_shelf_life = None
+    ):
         self.day = 0
-        self.cups = [FoodCup(creation_day=0)]  # Start with 1 cup, on day 0
         self.population = []          # Global adult population
         self.morgue = []
-        release_date = release_date
-        release_size = release_size
-        for p in pop_size:
-            self.population.append(Drosophila())
+        self.active_food_cups = []
+        self.spent_food_cups = []
+        self.food_schedule = []
+        
+        # initialize population
+        for _ in range(pop_size):
+            self.population.append(Drosophila(stage="adult"))  # always initialize with adults
+
+        if release_dates is not None:
+            # check for inconsistencies
+            if release_sizes is None:
+                raise ValueError("Both release_dates and release_sizes must be provided if one is given.")
+            
+            if len(release_dates) != len(release_sizes):
+                raise ValueError("release_dates and release_sizes must be of the same length.")
+                
+            # Store release schedule (day: size)
+            self.release_schedule = dict(zip(release_dates, release_sizes))
+
+        # Initialize food schedule
+        if food_init_dates is not None:
+            if food_shelf_life is None:
+                raise ValueError("food_init_dates, and food_shelf_life must all be provided.")
+            if len(food_init_dates) != len(food_shelf_life):
+                raise ValueError("Food scheduling vectors must have the same length.")
+            
+            # Store food events as tuples: (start_day, end_day, size)
+            self.food_schedule = list(zip(food_init_dates, food_shelf_life))
+            
+            # Add initial food cups (if any start on day 0)
+            for start, _ , _ in self.food_schedule:
+                if start == 0:
+                    self.active_food_cups.append(FoodCup(creation_day=0))
     
     def update_day(self):
-        self.day += 1
         
         # update flies in population
         for fly in self.population:
-            fly.update()
-
+            "update emerged flies and egg, larvae in active cups"
+            if fly.age > 10 or fly.ID in self.active_food_cups:
+                fly.update()
+        # mortality round
+        self.mortality_round()
+        # move dead flies to morgue
+        self.morgue.extend([fly for fly in self.population if not fly.alive])
+        # clear experimental population for alive flies only
+        self.population = [fly for fly in self.population if fly.alive]
 
         # update cups
-        # on days %7 add cup
-        # empty cup if age > 13
-        # remove cups if empty
+        for start, shelf_life  in self.food_schedule:
+            "update cups, deplete if time is true"
+            for cup in self.active_food_cups:
+                cup.deplete()
+                "retire cup if it has expired or spent"
+                if self.day == cup.creation_day + shelf_life or cup.spent == True:
+                    self.spent_food_cups.append() = self.active_food_cups.pop()
+            "add a cup if on schedule"
+            if start == self.day:
+                self.active_food_cups.append(FoodCup(creation_day=self.day))
+
 
         #### on this stage the flies alive should remain and the rest should be on the morgue
         
         # release transgenic males
+        # Check if a release is scheduled for the current day
+        if hasattr(self, 'release_schedule') and self.day in self.release_schedule:
+            for _ in range(self.release_schedule[self.day]):
+                self.population.append(Drosophila(stage="adult", 
+                                                  genotype={"sex":1, 
+                                                            "transgenic-lethal": 1, 
+                                                            "receptivity-vigor": np.random.random()}))
 
         # mate flies in population
 
         # female fly oviposition round
+        # sample from the female pool with replacement
+        # one round would be the number sample drawings equal to the complete female fertile population
+        # this is the key parameter to estimate in the sum of squares adjustment to data
+        # the number of rounds is important for simulation, but the actual reproductive output should be recorded daily
+        # with the reproductive output and knowing the maternal lineage you can calculate the effective population size
+
+        # complete day
+        self.day += 1
 
     def mortality_round(self):
         for fly in self.flies:
@@ -181,7 +255,6 @@ class Experiment:
                 # Check if the fly dies today based on age-independent probability
                 if np.random.random() < self.p_daily:
                     fly.alive = False
-                fly.age += 1
 
     def add_transgenic_males(self, count):
         """Release transgenic males into the population."""
