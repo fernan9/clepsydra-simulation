@@ -2,20 +2,27 @@ import numpy as np
 import random
 
 class FoodCup:
-    def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.05):
+    def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.0005):
         self.creation_day = creation_day  # Day this cup was added
         self.food = food                  # Initial food (grams)
         self.spent = False
         self.fly_daily_rate = fly_daily_rate          # standard day consumption per fly
+        self.flies_ID = []
 
-    def deplete(self, immatures = 0):
-        self.food -= self.fly_daily_rate * immatures
+    def deplete(self):
+        self.food -= self.fly_daily_rate * len(self.flies_ID)
         self.food = max(0, self.food)
         if self.food == 0:
             self.spent = True
 
+    def hold(self, new_fly_ID):
+        self.flies_ID.append(new_fly_ID)
+
     
 class Drosophila:
+    # ID zero is only for founding population
+    _next_id = 1
+
     def __init__(self, 
                  bday, 
                  stage="egg", 
@@ -25,12 +32,11 @@ class Drosophila:
                  spermatheque=None, 
                  mating_threshold = 1.0):
         # class variable that increments with each fly
-        # ID zero is only for founding population
-        _next_id = 1
+
         ''' Set initial values'''
         self.alive = True  # Track viability
         self.genotype = genotype or self._wildtype_genotype()
-        mating_threshold = mating_threshold
+        self.mating_threshold = mating_threshold
         self.bday = bday
         self.dday = None
         self.mated = False
@@ -68,14 +74,13 @@ class Drosophila:
         return {
             "sex": np.random.choice([0, 1]),                # SEX locus: 0 for male. 1 for female.
             "transgenic-lethal": 0 ,  # Sterility locus: 0 for wildtype. 1 for transgenic.
-            "receptivity-vigor": np.random()                # Receptivity-vigor locus: float between 1 and 0.  
+            "receptivity-vigor": np.random.random()                # Receptivity-vigor locus: float between 1 and 0.  
         }
 
     def update(self):
         """Update age and transition stages at predefined thresholds."""
         self._transition_stage()
         self._transgenic_lethality()
-        self._mortality_die()
         self.age += 1
 
     def _transgenic_lethality(self):
@@ -166,7 +171,8 @@ class PopulationMaintenance:
             np.histogram([f.age for f in adults], bins=range(0,100,10))[0])
 
 class Experiment:
-    def __init__(self, 
+    def __init__(self,
+                p_daily = 0.005,
                 pop_size = 10, 
                 release_dates = None, 
                 release_sizes = None,
@@ -174,6 +180,7 @@ class Experiment:
                 food_shelf_life = None):
         # begin setup
         self.day = 0
+        self.p_daily = p_daily
         # global populations, alive and dead
         self.population = []
         self.morgue = []
@@ -185,7 +192,7 @@ class Experiment:
         
         # initialize population
         for _ in range(pop_size):
-            self.population.append(Drosophila(stage="adult"))  # always initialize with adults
+            self.population.append(Drosophila(bday = self.day, stage="adult"))  # always initialize with adults
 
         if release_dates is not None:
             # check for inconsistencies
@@ -209,16 +216,16 @@ class Experiment:
             self.food_schedule = list(zip(food_init_dates, food_shelf_life))
             
             # Add initial food cups (if any start on day 0)
-            for start, _  in self.food_schedule:
-                if start == 0:
-                    self.active_food_cups.append(FoodCup(creation_day=0))
+            #for start, _  in self.food_schedule:
+            #    if start == 0:
+            #        self.active_food_cups.append(FoodCup(creation_day=0))
     
     def update_day(self):
         ''' update flies'''
         # update flies in population
         for fly in self.population:
             # update emerged flies and egg, larvae in active cups
-            if fly.age > 10 or fly.ID in self.active_food_cups:
+            if fly.age > 10 or fly.id in self.active_food_cups:
                 fly.update()
         # mortality round
         self.mortality_round()
@@ -234,7 +241,7 @@ class Experiment:
                 cup.deplete()
                 # retire cup if it has expired or spent
                 if self.day == cup.creation_day + shelf_life or cup.spent == True:
-                    self.spent_food_cups.append() = self.active_food_cups.pop()
+                    self.spent_food_cups.append(self.active_food_cups.pop())
                     # cull flies on spent cup
                     ''' missing'''
             # add a cup if on schedule
@@ -248,55 +255,61 @@ class Experiment:
         # Check if a release is scheduled for the current day
         if hasattr(self, 'release_schedule') and self.day in self.release_schedule:
             for _ in range(self.release_schedule[self.day]):
-                self.population.append(Drosophila(stage="adult", 
+                self.population.append(Drosophila(bday = self.day,
+                                                  stage="adult", 
                                                   genotype={"sex":1, 
                                                             "transgenic-lethal": 1, 
                                                             "receptivity-vigor": np.random.random()}))
 
         ''' cross cycle'''
         # mate flies in population
-        # separate males from females that have not been mated and are adults
+        # separate males from females that are adults
         self.temp_males = [fly for fly in self.population 
                           if (fly.genotype["sex"] == 0
                           and fly.stage == "adult")]
         
         self.temp_females = [fly for fly in self.population
                             if (fly.genotype["sex"] == 1 
-                            and not fly.fecund
                             and fly.stage == "adult")]
         
-        # Shuffle to avoid selection bias
-        random.shuffle(self.temp_males)
-        random.shuffle(self.temp_females)
-
         # round across all females
         for fem in self.temp_females:
             if not self.temp_males:
                 break
-            
+            if fem.fecund: # potential multiple mating section
+                break
             male = self.temp_males[0]
             fem.cross(male)
+            random.shuffle(self.temp_males)
         # optional counts in the future
         # In __init__:
         # self.mating_count = 0
         # In cross():
         # self.mating_count += 1
         ''' oviposition cycle'''
-        avg_clutch_size = 2
+        clutch_size = 2
+        random.shuffle(self.temp_females)
 
-        # female fly oviposition round
-        # sample from the female pool with replacement
-        # one round would be the number sample drawings equal to the complete female fertile population
-        # this is the key parameter to estimate in the sum of squares adjustment to data
-        # the number of rounds is important for simulation, but the actual reproductive output should be recorded daily
-        # with the reproductive output and knowing the maternal lineage you can calculate the effective population size
+        for fem in self.temp_females:
+            # random chance above 0.5 
+            for _ in range(clutch_size):
+                if np.random.random() > 0.5:
+                    embryo_genotype = fem.oviposition()
+                    new_fly = Drosophila(bday = self.day, genotype=embryo_genotype)
+                    self.population.append(new_fly)
+                    random.shuffle(self.active_food_cups)
+                    self.active_food_cups[0].hold(new_fly.id)
 
         ''' documentation cycle'''
-        # complete day
+        print(f"pop size: {len(self.population)}")
+        print(f"morgue size: {len(self.morgue)}")
+        print(f"End of day: {self.day}")
+
+        '''complete day'''
         self.day += 1
 
     def mortality_round(self):
-        for fly in self.flies:
+        for fly in self.population:
             if fly.alive:
                 # Check if the fly dies today based on age-independent probability
                 if np.random.random() < self.p_daily:
