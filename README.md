@@ -27,5 +27,6 @@ clepsydra-simulation/
 └── README.md                 # This file
 ```
 ## Development Log
+-**2025-07-05**: Finished core classes and added a test file. No adults accumulate.
 - **2025-06-22**: Implemented core `Drosophila` class with genotype tracking
 - **2025-06-21**: Added FoodCup dynamics with larval development
