@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class FoodCup:
     def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.05):
@@ -6,9 +7,6 @@ class FoodCup:
         self.food = food                  # Initial food (grams)
         self.spent = False
         self.fly_daily_rate = fly_daily_rate          # standard day consumption per fly
-    
-    def getCreationDay(self):
-        return self.creation_day
 
     def deplete(self, immatures = 0):
         self.food -= self.fly_daily_rate * immatures
@@ -16,15 +14,32 @@ class FoodCup:
         if self.food == 0:
             self.spent = True
 
-
     
 class Drosophila:
-    def __init__(self, stage="egg", genotype=None, spermatheque=None, mating_threshold = 1.0, food_cup_ID = FoodCup.getCreationDay()):
-        
+    def __init__(self, 
+                 bday, 
+                 stage="egg", 
+                 genotype=None, 
+                 motherID = 0,
+                 fatherID = 0,
+                 spermatheque=None, 
+                 mating_threshold = 1.0):
+        # class variable that increments with each fly
+        # ID zero is only for founding population
+        _next_id = 1
         ''' Set initial values'''
         self.alive = True  # Track viability
         self.genotype = genotype or self._wildtype_genotype()
         mating_threshold = mating_threshold
+        self.bday = bday
+        self.dday = None
+        self.mated = False
+        
+        ''' ID handling '''
+        self.id = Drosophila._next_id
+        Drosophila._next_id += 1
+        self.fatherID = fatherID
+        self.motherID = motherID
         
         '''Define stages and age'''
         self.stage = stage  # "egg", "larva", "immature", "adult"
@@ -38,11 +53,6 @@ class Drosophila:
             self.age = 12
         else:
             raise ValueError("Stage provided is not valid.")
-
-        self.food_cup_ID = food_cup_ID
-        ''' Still missing how to handle food cups ID'''
-
-## add IDs to flies to have an array to modify
 
         #female spescific attributes
         if self.genotype["sex"] == 1:   # sex locus = 1: female
@@ -88,7 +98,8 @@ class Drosophila:
             self.fertile = True
 
     def cross(self, male):
-        """Female mates with male if combined receptivity-vigor exceeds threshold."""
+        ''' Female exclusive trait'''
+        # Female mates with male if combined receptivity-vigor exceeds threshold
         new_receptivity = self.genotype["receptivity-vigor"] # multiply by a factor of age dependent fecundity
         new_vigor = male.genotype["receptivity-vigor"]
 
@@ -100,7 +111,8 @@ class Drosophila:
             self.spermatheque.pop()
 
     def oviposition(self):
-        """Lay one egg using the last male's genotype (Mendelian inheritance with mutation)."""
+        ''' Female exclusive trait'''
+        # Lay one egg using the last male's genotype (Mendelian inheritance with mutation)
         if not self.spermatheque or not self.fecund:
             return None
         
@@ -123,9 +135,9 @@ class Drosophila:
         allele = np.random.choice([mother_allele, father_allele])
         return allele # if np.random.random() > mutation_rate else 1 - allele
 
-class PopulationTracker:
+class PopulationMaintenance:
     def __init__(self):
-        self.daily_data = {
+        self.report_data = {
             'date': [],
             'N': [],
             'genotype_freqs': [],  # Dict: {genotype_hash: count}
@@ -154,20 +166,22 @@ class PopulationTracker:
             np.histogram([f.age for f in adults], bins=range(0,100,10))[0])
 
 class Experiment:
-    def __init__(
-        self, 
-        pop_size = 10, 
-        release_dates = None, 
-        release_sizes = None,
-        food_init_dates = None,
-        food_shelf_life = None
-    ):
+    def __init__(self, 
+                pop_size = 10, 
+                release_dates = None, 
+                release_sizes = None,
+                food_init_dates = None,
+                food_shelf_life = None):
+        # begin setup
         self.day = 0
-        self.population = []          # Global adult population
+        # global populations, alive and dead
+        self.population = []
         self.morgue = []
+        # handling of food
+        self.food_schedule = []     # a list of dates for cups to arrive
+        # lists of foodcups
         self.active_food_cups = []
-        self.spent_food_cups = []
-        self.food_schedule = []
+        self.spent_food_cups = [] 
         
         # initialize population
         for _ in range(pop_size):
@@ -195,15 +209,15 @@ class Experiment:
             self.food_schedule = list(zip(food_init_dates, food_shelf_life))
             
             # Add initial food cups (if any start on day 0)
-            for start, _ , _ in self.food_schedule:
+            for start, _  in self.food_schedule:
                 if start == 0:
                     self.active_food_cups.append(FoodCup(creation_day=0))
     
     def update_day(self):
-        
+        ''' update flies'''
         # update flies in population
         for fly in self.population:
-            "update emerged flies and egg, larvae in active cups"
+            # update emerged flies and egg, larvae in active cups
             if fly.age > 10 or fly.ID in self.active_food_cups:
                 fly.update()
         # mortality round
@@ -213,22 +227,24 @@ class Experiment:
         # clear experimental population for alive flies only
         self.population = [fly for fly in self.population if fly.alive]
 
-        # update cups
+        ''' update cups'''
         for start, shelf_life  in self.food_schedule:
-            "update cups, deplete if time is true"
+            # update cups, deplete if time is true
             for cup in self.active_food_cups:
                 cup.deplete()
-                "retire cup if it has expired or spent"
+                # retire cup if it has expired or spent
                 if self.day == cup.creation_day + shelf_life or cup.spent == True:
                     self.spent_food_cups.append() = self.active_food_cups.pop()
-            "add a cup if on schedule"
+                    # cull flies on spent cup
+                    ''' missing'''
+            # add a cup if on schedule
             if start == self.day:
                 self.active_food_cups.append(FoodCup(creation_day=self.day))
 
 
         #### on this stage the flies alive should remain and the rest should be on the morgue
         
-        # release transgenic males
+        ''' release transgenic males'''
         # Check if a release is scheduled for the current day
         if hasattr(self, 'release_schedule') and self.day in self.release_schedule:
             for _ in range(self.release_schedule[self.day]):
@@ -237,7 +253,36 @@ class Experiment:
                                                             "transgenic-lethal": 1, 
                                                             "receptivity-vigor": np.random.random()}))
 
+        ''' cross cycle'''
         # mate flies in population
+        # separate males from females that have not been mated and are adults
+        self.temp_males = [fly for fly in self.population 
+                          if (fly.genotype["sex"] == 0
+                          and fly.stage == "adult")]
+        
+        self.temp_females = [fly for fly in self.population
+                            if (fly.genotype["sex"] == 1 
+                            and not fly.fecund
+                            and fly.stage == "adult")]
+        
+        # Shuffle to avoid selection bias
+        random.shuffle(self.temp_males)
+        random.shuffle(self.temp_females)
+
+        # round across all females
+        for fem in self.temp_females:
+            if not self.temp_males:
+                break
+            
+            male = self.temp_males[0]
+            fem.cross(male)
+        # optional counts in the future
+        # In __init__:
+        # self.mating_count = 0
+        # In cross():
+        # self.mating_count += 1
+        ''' oviposition cycle'''
+        avg_clutch_size = 2
 
         # female fly oviposition round
         # sample from the female pool with replacement
@@ -246,6 +291,7 @@ class Experiment:
         # the number of rounds is important for simulation, but the actual reproductive output should be recorded daily
         # with the reproductive output and knowing the maternal lineage you can calculate the effective population size
 
+        ''' documentation cycle'''
         # complete day
         self.day += 1
 
@@ -257,6 +303,6 @@ class Experiment:
                     fly.alive = False
 
     def add_transgenic_males(self, count):
-        """Release transgenic males into the population."""
+        """Release transgenic males into the population. PENDING"""
         for _ in range(count):
             self.adults.append(Adult(genotype="transgenic"))
