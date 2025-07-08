@@ -1,8 +1,10 @@
 import numpy as np
 import random
+import csv
+import matplotlib.pyplot as plt
 
 class FoodCup:
-    def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.0005):
+    def __init__(self, creation_day, food=30.0, fly_daily_rate = 0.00001):
         self.creation_day = creation_day  # Day this cup was added
         self.food = food                  # Initial food (grams)
         self.spent = False
@@ -25,7 +27,7 @@ class Drosophila:
 
     def __init__(self, 
                  bday, 
-                 stage="egg", 
+                 age=0, 
                  genotype=None, 
                  motherID = 0,
                  fatherID = 0,
@@ -40,7 +42,7 @@ class Drosophila:
         self.bday = bday
         self.dday = None
         self.mated = False
-        
+        self.age = age
         ''' ID handling '''
         self.id = Drosophila._next_id
         Drosophila._next_id += 1
@@ -48,15 +50,14 @@ class Drosophila:
         self.motherID = motherID
         
         '''Define stages and age'''
-        self.stage = stage  # "egg", "larva", "immature", "adult"
-        if self.stage == "egg":
-            self.age = 0    # Tracks time in current stage
-        elif self.stage == "larva":
-            self.age = 2
-        elif self.stage == "immature":
-            self.age = 10
-        elif self.stage == "adult":
-            self.age = 12
+        if self.age == 0:    # Tracks time in current stage
+            self.stage = "egg"
+        elif self.age == 2:
+            self.stage = "larva"
+        elif self.age == 10:
+            self.stage = "immature"
+        elif self.age == 12:
+            self.stage = "adult"
         else:
             raise ValueError("Stage provided is not valid.")
 
@@ -74,6 +75,14 @@ class Drosophila:
         return {
             "sex": np.random.choice([0, 1]),                # SEX locus: 0 for male. 1 for female.
             "transgenic-lethal": 0 ,  # Sterility locus: 0 for wildtype. 1 for transgenic.
+            "receptivity-vigor": np.random.random()                # Receptivity-vigor locus: float between 1 and 0.  
+        }
+    
+    def transgenic_male(self):
+        # will be good to adjust later for a bitmask: Pack into a single integer (e.g., 0b101 = sex=1, lethal=0, vigor=1).
+        return {
+            "sex": 0,                # SEX locus: 0 for male. 1 for female.
+            "transgenic-lethal": 1 ,  # Sterility locus: 0 for wildtype. 1 for transgenic.
             "receptivity-vigor": np.random.random()                # Receptivity-vigor locus: float between 1 and 0.  
         }
 
@@ -128,8 +137,7 @@ class Drosophila:
         # Mendelian inheritance with possible mutation
         offspring_genotype = {
             "sex": np.random.choice([0, 1]),  # Random sex determination
-            "transgenic-lethal": self._inherit_allele(female_genotype["transgenic-lethal"], 
-                                                    male_genotype["transgenic-lethal"]),
+            "transgenic-lethal": male_genotype["transgenic-lethal"],
             "receptivity-vigor": self._inherit_allele(female_genotype["receptivity-vigor"],
                                         male_genotype["receptivity-vigor"])
         }
@@ -172,8 +180,8 @@ class PopulationMaintenance:
 
 class Experiment:
     def __init__(self,
-                p_daily = 0.005,
-                pop_size = 10, 
+                p_daily = 0.1,
+                pop_size = 30, 
                 release_dates = None, 
                 release_sizes = None,
                 food_init_dates = None,
@@ -181,6 +189,7 @@ class Experiment:
         # begin setup
         self.day = 0
         self.p_daily = p_daily
+        self.clutch_size = 5
         # global populations, alive and dead
         self.population = []
         self.morgue = []
@@ -189,10 +198,12 @@ class Experiment:
         # lists of foodcups
         self.active_food_cups = []
         self.spent_food_cups = [] 
+        # data logging
+        self.daily_data = []  # Store daily logs: [day, total, males, females]
         
         # initialize population
         for _ in range(pop_size):
-            self.population.append(Drosophila(bday = self.day, stage="adult"))  # always initialize with adults
+            self.population.append(Drosophila(bday = self.day, age = 12))  # always initialize with adults
 
         if release_dates is not None:
             # check for inconsistencies
@@ -225,29 +236,35 @@ class Experiment:
         # update flies in population
         for fly in self.population:
             # update emerged flies and egg, larvae in active cups
-            if fly.age > 10 or fly.id in self.active_food_cups:
-                fly.update()
+            #if fly.age > 10 or fly.id in self.active_food_cups:
+            fly.update()
         # mortality round
         self.mortality_round()
-        # move dead flies to morgue
-        self.morgue.extend([fly for fly in self.population if not fly.alive])
-        # clear experimental population for alive flies only
-        self.population = [fly for fly in self.population if fly.alive]
-
         ''' update cups'''
         for start, shelf_life  in self.food_schedule:
             # update cups, deplete if time is true
-            for cup in self.active_food_cups:
-                cup.deplete()
-                # retire cup if it has expired or spent
-                if self.day == cup.creation_day + shelf_life or cup.spent == True:
-                    self.spent_food_cups.append(self.active_food_cups.pop())
-                    # cull flies on spent cup
-                    ''' missing'''
+            if len(self.active_food_cups) > 0:
+                for cup in self.active_food_cups:
+                    cup.deplete()
+                    # retire cup if it has expired or spent
+                    if self.day == cup.creation_day + shelf_life or cup.spent == True:
+                        spent_cup = self.active_food_cups.pop()
+                        self.spent_food_cups.append(spent_cup)
+                        # cull flies on spent cup
+                        for fly_id in spent_cup.flies_ID:
+                            for fly in self.population:
+                                if (fly.id == fly_id and fly.age < 10):
+                                    fly.alive = False  # Mark for removal
+                                    break  # Exit inner loop once found
+                    
             # add a cup if on schedule
             if start == self.day:
                 self.active_food_cups.append(FoodCup(creation_day=self.day))
-
+        
+        '''move dead flies to morgue'''
+        self.morgue.extend([fly for fly in self.population if not fly.alive])
+        # clear experimental population for alive flies only
+        self.population = [fly for fly in self.population if fly.alive]
 
         #### on this stage the flies alive should remain and the rest should be on the morgue
         
@@ -287,18 +304,17 @@ class Experiment:
         # In cross():
         # self.mating_count += 1
         ''' oviposition cycle'''
-        clutch_size = 2
         random.shuffle(self.temp_females)
-
-        for fem in self.temp_females:
-            # random chance above 0.5 
-            for _ in range(clutch_size):
-                if np.random.random() > 0.5:
-                    embryo_genotype = fem.oviposition()
-                    new_fly = Drosophila(bday = self.day, genotype=embryo_genotype)
-                    self.population.append(new_fly)
-                    random.shuffle(self.active_food_cups)
-                    self.active_food_cups[0].hold(new_fly.id)
+        if len(self.active_food_cups) > 0:
+            for fem in self.temp_females:
+                # random chance above 0.5 
+                for _ in range(self.clutch_size):
+                    if np.random.random() > 0.5:
+                        embryo_genotype = fem.oviposition()
+                        new_fly = Drosophila(bday = self.day, genotype=embryo_genotype)
+                        self.population.append(new_fly)
+                        random.shuffle(self.active_food_cups)
+                        self.active_food_cups[0].hold(new_fly.id)
 
         ''' documentation cycle'''
         print(f"pop size: {len(self.population)}")
@@ -306,6 +322,7 @@ class Experiment:
         print(f"End of day: {self.day}")
 
         '''complete day'''
+        self.log_data()  # Record data before incrementing day
         self.day += 1
 
     def mortality_round(self):
@@ -317,5 +334,45 @@ class Experiment:
 
     def add_transgenic_males(self, count):
         """Release transgenic males into the population. PENDING"""
+        transgenic_male_genotype = {
+            "sex": 0,                # SEX locus: 0 for male. 1 for female.
+            "transgenic-lethal": 1 ,  # Sterility locus: 0 for wildtype. 1 for transgenic.
+            "receptivity-vigor": np.random.random()                # Receptivity-vigor locus: float between 1 and 0.  
+        }
         for _ in range(count):
-            self.adults.append(Adult(genotype="transgenic"))
+            self.population.append(Drosophila(bday = self.day, 
+                                              stage="adult", 
+                                              genotype=transgenic_male_genotype))
+    
+    def log_data(self):
+        """Record daily population stats (total, males, females)."""
+        adults = [fly for fly in self.population if fly.stage == "adult"]
+        males = sum(1 for fly in adults if fly.genotype["sex"] == 0)
+        females = sum(1 for fly in adults if fly.genotype["sex"] == 1)
+        self.daily_data.append([self.day, len(adults), males, females])
+    
+    def save_to_csv(self, filename="population_data.csv"):
+        """Save daily logs to a CSV file."""
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Day", "Total", "Males", "Females"])
+            writer.writerows(self.daily_data)
+        print(f"Data saved to {filename}")
+
+    def plot_population(self):
+        """Plot population trends over time."""
+        days = [row[0] for row in self.daily_data]
+        total = [row[1] for row in self.daily_data]
+        males = [row[2] for row in self.daily_data]
+        females = [row[3] for row in self.daily_data]
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(days, total, label="Total", linestyle="-", color="black")
+        plt.plot(days, males, label="Males", linestyle="--", color="blue")
+        plt.plot(days, females, label="Females", linestyle="--", color="red")
+        plt.xlabel("Day")
+        plt.ylabel("Population")
+        plt.title("Drosophila Population Over Time")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
