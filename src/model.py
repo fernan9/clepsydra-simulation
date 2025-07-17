@@ -182,6 +182,8 @@ class Experiment:
     def __init__(self,
                 p_daily = 0.1,
                 pop_size = 30, 
+                clutch_size = 5,
+                consumption_rate = 0.00001,
                 release_dates = None, 
                 release_sizes = None,
                 food_init_dates = None,
@@ -189,7 +191,8 @@ class Experiment:
         # begin setup
         self.day = 0
         self.p_daily = p_daily
-        self.clutch_size = 5
+        self.clutch_size = clutch_size
+        self.consumption_rate = consumption_rate
         # global populations, alive and dead
         self.population = []
         self.morgue = []
@@ -259,10 +262,14 @@ class Experiment:
                     
             # add a cup if on schedule
             if start == self.day:
-                self.active_food_cups.append(FoodCup(creation_day=self.day))
+                self.active_food_cups.append(FoodCup(creation_day=self.day, fly_daily_rate = self.consumption_rate))
         
         '''move dead flies to morgue'''
-        self.morgue.extend([fly for fly in self.population if not fly.alive])
+        daily_mortality = [fly for fly in self.population if not fly.alive]
+        daily_adult_mortality = [fly for fly in self.population if not fly.alive and fly.age > 9]
+        daily_mortality_census = len(daily_adult_mortality)
+        self.morgue.extend(daily_adult_mortality)
+
         # clear experimental population for alive flies only
         self.population = [fly for fly in self.population if fly.alive]
 
@@ -317,12 +324,12 @@ class Experiment:
                         self.active_food_cups[0].hold(new_fly.id)
 
         ''' documentation cycle'''
-        print(f"pop size: {len(self.population)}")
-        print(f"morgue size: {len(self.morgue)}")
-        print(f"End of day: {self.day}")
+        #print(f"pop size: {len(self.population)}")
+        #print(f"morgue size: {len(self.morgue)}")
+        #print(f"End of day: {self.day}")
 
         '''complete day'''
-        self.log_data()  # Record data before incrementing day
+        self.log_data(daily_mortality_census)  # Record data before incrementing day
         self.day += 1
 
     def mortality_round(self):
@@ -344,12 +351,12 @@ class Experiment:
                                               stage="adult", 
                                               genotype=transgenic_male_genotype))
     
-    def log_data(self):
+    def log_data(self, mortality_counts):
         """Record daily population stats (total, males, females)."""
         adults = [fly for fly in self.population if fly.stage == "adult"]
         males = sum(1 for fly in adults if fly.genotype["sex"] == 0)
         females = sum(1 for fly in adults if fly.genotype["sex"] == 1)
-        self.daily_data.append([self.day, len(adults), males, females])
+        self.daily_data.append([self.day, len(adults), males, females, mortality_counts])
     
     def save_to_csv(self, filename="population_data.csv"):
         """Save daily logs to a CSV file."""
@@ -365,14 +372,31 @@ class Experiment:
         total = [row[1] for row in self.daily_data]
         males = [row[2] for row in self.daily_data]
         females = [row[3] for row in self.daily_data]
+        total_deaths = [row[4] for row in self.daily_data]
 
         plt.figure(figsize=(10, 6))
         plt.plot(days, total, label="Total", linestyle="-", color="black")
         plt.plot(days, males, label="Males", linestyle="--", color="blue")
         plt.plot(days, females, label="Females", linestyle="--", color="red")
+        plt.plot(days, total_deaths, label="Adult mortality", linestyle="dotted", color="gray")
         plt.xlabel("Day")
         plt.ylabel("Population")
         plt.title("Drosophila Population Over Time")
         plt.legend()
         plt.grid(True)
         plt.show()
+
+    def mortality_census_fit_data(self):
+        # extract the vector of adult mortality
+        mortality_census = [row[4] for row in self.daily_data]
+        # aggregate weekly deaths
+        weekly_mortality_census = []
+        for i in range(0, len(mortality_census), 7):
+            group = mortality_census[i:i+7]          # Extract group of 7 elements
+            weekly_mortality_census.append(sum(group)) # Sum the group
+        # extract the final adult population
+        final_adult_census = [row[1] for row in self.daily_data][-1]
+        # add final population to last mortality count
+        weekly_mortality_census[-1] += final_adult_census
+
+        return weekly_mortality_census

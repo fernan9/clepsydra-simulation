@@ -4,7 +4,7 @@ import random
 from model import Drosophila, FoodCup, Experiment
 
 # Create weekly food schedule (every 7 days)
-max_days = 300
+max_days = 30
 exp_init_dates = list(range(0, max_days + 1, 7))  # [0, 7, 14, ..., 196]
 exp_shelf_life = [14] * len(exp_init_dates)     # [14, 14, 14, ...]
 
@@ -31,5 +31,6 @@ for day in range(max_days):
     #print(f"Spent food cups: {len(experiment.spent_food_cups)}")
 
 # Save and plot data
+print(experiment.mortality_census_fit_data())
 experiment.save_to_csv()
 experiment.plot_population()
